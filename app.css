@@ -5,6 +5,7 @@ Generic reset.
 * {
 	padding: 0;
 	margin: 0;
+    font-family: "Arial";
 }
 
 .test {
@@ -21,7 +22,13 @@ Styles for nodes and connectors.
 
 .node-rect {
 	stroke: black;
-	stroke-width: 2;
+	stroke-width: 1;
+}
+
+.node-name-text {
+    font-weight: bold; 
+    fill: blue;
+    text-decoration: underline;
 }
 
 .mouseover-node-rect {
@@ -37,7 +44,7 @@ Styles for nodes and connectors.
 .connector-circle {
     fill: white;
     stroke: black;
-    stroke-width: 2;
+    stroke-width: 1;
 }
 
 .mouseover-connector-circle {
@@ -117,7 +124,7 @@ The element (in this case the SVG element) that contains the draggable elements.
 */
 
 .draggable-container {
-	border: solid 1px blue;
+	/*border: solid 1px blue;*/
 }
 
 /*

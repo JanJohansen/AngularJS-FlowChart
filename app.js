@@ -57,36 +57,37 @@ angular.module('app', ['flowChart', ])
 	//
 	// Setup the data-model for the chart.
 	//
-	var chartDataModel = {
+    var chartDataModel = {
+        zoomX: 1000,
 
 		nodes: [
 			{
-				name: "Example Node 1",
+                name: "OfficeMultiThing",
 				id: 0,
 				x: 0,
 				y: 0,
-				width: 350,
+				width: 250,
 				inputConnectors: [
 					{
-						name: "A",
+						name: "Spotlight.Level",
 					},
 					{
-						name: "B",
-					},
-					{
-						name: "C",
-					},
+                        name: "Floorlamp.Level",
+					}
 				],
 				outputConnectors: [
 					{
-						name: "A",
+						name: "Temperature",
 					},
 					{
-						name: "B",
+						name: "Humidity",
 					},
 					{
-						name: "C",
-					},
+                        name: "LightLevel",
+                    },
+                    {
+                        name: "Motion",
+                    },
 				],
 			},
 
@@ -123,7 +124,7 @@ angular.module('app', ['flowChart', ])
 
 		connections: [
 			{
-				name:'Connection 1',
+				name:'',
 				source: {
 					nodeID: 0,
 					connectorIndex: 1,
@@ -135,7 +136,7 @@ angular.module('app', ['flowChart', ])
 				},
 			},
 			{
-				name:'Connection 2',
+				name:'',
 				source: {
 					nodeID: 0,
 					connectorIndex: 0,
@@ -179,7 +180,7 @@ angular.module('app', ['flowChart', ])
 			// 
 			// Ctrl + A
 			//
-			$scope.chartViewModel.selectAll();
+            $scope.chartViewModel.selectAll();
 		}
 
 		if (evt.keyCode == escKeyCode) {

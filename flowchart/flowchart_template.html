@@ -2,7 +2,11 @@
   class="draggable-container"
   xmlns="http://www.w3.org/2000/svg"
   ng-mousedown="mouseDown($event)"
-  ng-mousemove="mouseMove($event)"  
+  ng-mousemove="mouseMove($event)" 
+  ng-mouse-wheel-up="mouseWheelUp($event)"
+  ng-mouse-wheel-down="mouseWheelDown($event)"
+  view-box="{{viewPort.x}} {{viewPort.y}} {{viewPort.w}} 1"
+  preserveAspectRatio="xMinYMin meet"
   >
   <defs>
     <linearGradient 
@@ -15,13 +19,11 @@
       >
       <stop 
         offset="0" 
-        stop-opacity="0.99609" 
-        stop-color="#56aaff"
+        stop-color="#dddddd"
         />
         <stop 
         offset="0.63934" 
-        stop-opacity="0.99219" 
-        stop-color="#d0d0e5"
+        stop-color="#f7f7f7"
         />
     </linearGradient>
   </defs>
@@ -32,20 +34,21 @@
     >
     <rect 
       ng-attr-class="{{node.selected() && 'selected-node-rect' || (node == mouseOverNode && 'mouseover-node-rect' || 'node-rect')}}"
-      ry="10" 
-      rx="10" 
+      ry="5" 
+      rx="5" 
       x="0" 
       y="0" 
       ng-attr-width="{{node.width()}}" 
       ng-attr-height="{{node.height()}}" 
-      fill="url(#nodeBackgroundGradient)"
+      fill="url(#nodeBackgroundGradient)" 
       >
 
     </rect>
 
     <text
+      class="node-name-text"
       ng-attr-x="{{node.width()/2}}"
-      y="25"
+      y="15"
       text-anchor="middle"
       alignment-baseline="middle"
       >
@@ -58,9 +61,9 @@
       class="connector input-connector"
       >
       <text
-        ng-attr-x="{{connector.x() + 20}}"
+        ng-attr-x="{{connector.x() + 15}}"
         ng-attr-y="{{connector.y()}}"
-        text-anchor="left"
+        text-anchor="start"
         alignment-baseline="middle"
         >
         {{connector.name()}}
@@ -80,7 +83,7 @@
       class="connector output-connector"
       >
       <text
-        ng-attr-x="{{connector.x() - 20}}"
+        ng-attr-x="{{connector.x() - 15}}"
         ng-attr-y="{{connector.y()}}"
         text-anchor="end"
         alignment-baseline="middle"

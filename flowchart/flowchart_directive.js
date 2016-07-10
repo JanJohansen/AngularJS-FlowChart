@@ -97,6 +97,8 @@ angular.module('flowChart', ['dragging'] )
 	//
 	// Init data-model variables.
 	//
+    $scope.viewPort = { x: 0, y: 0, w: 2000, h: 2000 };
+    this.zoomFactor = 0.1;
 	$scope.draggingConnection = false;
 	$scope.connectorSize = 10;
 	$scope.dragSelecting = false;
@@ -195,50 +197,93 @@ angular.module('flowChart', ['dragging'] )
 	//
 	$scope.mouseDown = function (evt) {
 
-		$scope.chart.deselectAll();
+        $scope.chart.deselectAll();
 
-		dragging.startDrag(evt, {
+        if (!evt.shiftKey) {
 
-			//
-			// Commence dragging... setup variables to display the drag selection rect.
-			//
-			dragStarted: function (x, y) {
-				$scope.dragSelecting = true;
-				var startPoint = controller.translateCoordinates(x, y, evt);
-				$scope.dragSelectionStartPoint = startPoint;
-				$scope.dragSelectionRect = {
-					x: startPoint.x,
-					y: startPoint.y,
-					width: 0,
-					height: 0,
-				};
-			},
+            console.log(evt);
 
-			//
-			// Update the drag selection rect while dragging continues.
-			//
-			dragging: function (x, y) {
-				var startPoint = $scope.dragSelectionStartPoint;
-				var curPoint = controller.translateCoordinates(x, y, evt);
+            // Handle panning.
+            dragging.startDrag(evt, {
 
-				$scope.dragSelectionRect = {
-					x: curPoint.x > startPoint.x ? startPoint.x : curPoint.x,
-					y: curPoint.y > startPoint.y ? startPoint.y : curPoint.y,
-					width: curPoint.x > startPoint.x ? curPoint.x - startPoint.x : startPoint.x - curPoint.x,
-					height: curPoint.y > startPoint.y ? curPoint.y - startPoint.y : startPoint.y - curPoint.y,
-				};
-			},
+                //
+                // Commence dragging... setup variables to display the drag selection rect.
+                //
+                dragStarted: function (x, y) {
+                    $scope.panning = true;
+                    var startPoint = controller.translateCoordinates(x, y, evt);
+                    $scope.panningStartPoint = startPoint;
+                    $scope.viewPortPanningStart = $scope.viewPort;
+                },
 
-			//
-			// Dragging has ended... select all that are within the drag selection rect.
-			//
-			dragEnded: function () {
-				$scope.dragSelecting = false;
-				$scope.chart.applySelectionRect($scope.dragSelectionRect);
-				delete $scope.dragSelectionStartPoint;
-				delete $scope.dragSelectionRect;
-			},
-		});
+                //
+                // Update the drag selection rect while dragging continues.
+                //
+                dragging: function (x, y) {
+                    var startPoint = $scope.panningStartPoint;
+                    var curPoint = controller.translateCoordinates(x, y, evt);
+                    var deltaX = startPoint.x - curPoint.x;
+                    var deltaY = startPoint.y - curPoint.y;
+                    //console.log("start:", startPoint, "cur:", curPoint);
+                    $scope.viewPort.x = $scope.viewPortPanningStart.x + deltaX;
+                    $scope.viewPort.y = $scope.viewPortPanningStart.y + deltaY;
+                },
+
+                //
+                // Dragging has ended... select all that are within the drag selection rect.
+                //
+                dragEnded: function () {
+                    $scope.panning = false;
+                    delete $scope.panningStartPoint;
+                    delete $scope.viewPortPanningStart;
+                },
+            });
+        } else {
+            // Handle node selection.
+
+            dragging.startDrag(evt, {
+
+                //
+                // Commence dragging... setup variables to display the drag selection rect.
+                //
+                dragStarted: function (x, y) {
+                    $scope.dragSelecting = true;
+                    var startPoint = controller.translateCoordinates(x, y, evt);
+                    $scope.dragSelectionStartPoint = startPoint;
+                    $scope.dragSelectionRect = {
+                        x: startPoint.x,
+                        y: startPoint.y,
+                        width: 0,
+                        height: 0,
+                    };
+                },
+
+                //
+                // Update the drag selection rect while dragging continues.
+                //
+                dragging: function (x, y) {
+                    var startPoint = $scope.dragSelectionStartPoint;
+                    var curPoint = controller.translateCoordinates(x, y, evt);
+
+                    $scope.dragSelectionRect = {
+                        x: curPoint.x > startPoint.x ? startPoint.x : curPoint.x,
+                        y: curPoint.y > startPoint.y ? startPoint.y : curPoint.y,
+                        width: curPoint.x > startPoint.x ? curPoint.x - startPoint.x : startPoint.x - curPoint.x,
+                        height: curPoint.y > startPoint.y ? curPoint.y - startPoint.y : startPoint.y - curPoint.y,
+                    };
+                },
+
+                //
+                // Dragging has ended... select all that are within the drag selection rect.
+                //
+                dragEnded: function () {
+                    $scope.dragSelecting = false;
+                    $scope.chart.applySelectionRect($scope.dragSelectionRect);
+                    delete $scope.dragSelectionStartPoint;
+                    delete $scope.dragSelectionRect;
+                },
+            });
+        }
 	};
 
 	//
@@ -282,6 +327,35 @@ angular.module('flowChart', ['dragging'] )
 		var scope = controller.checkForHit(mouseOverElement, controller.nodeClass);
 		$scope.mouseOverNode = (scope && scope.node) ? scope.node : null;		
 	};
+
+    //
+    // Called for each mouse wheel up event on the svg element.
+    //
+    $scope.mouseWheelUp = function (evt) {
+        var curPoint = controller.translateCoordinates(evt.pageX, evt.pageY, evt);
+        console.log(curPoint, evt);
+        console.log("svgSize:", $element[0].scrollWidth, $element[0].scrollHeight);
+        console.log("mousePoint:", evt.offsetX, evt.offsetY);
+
+        var startW = $scope.viewPort.w;
+        $scope.viewPort.w /= 1 + controller.zoomFactor ;
+
+        var deltaW = startW - $scope.viewPort.w;
+        $scope.viewPort.x += deltaW / 2;
+        $scope.viewPort.y += deltaW / 2;
+    }
+    
+    //
+    // Called for each mouse wheel down event on the svg element.
+    //
+    $scope.mouseWheelDown = function (evt) {
+        var startW = $scope.viewPort.w;
+        $scope.viewPort.w *= 1 + controller.zoomFactor ;
+
+        var deltaW = startW - $scope.viewPort.w;
+        $scope.viewPort.x += deltaW / 2;
+        $scope.viewPort.y += deltaW / 2;
+    }
 
 	//
 	// Handle mousedown on a node.
